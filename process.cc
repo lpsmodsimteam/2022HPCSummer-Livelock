@@ -6,13 +6,23 @@
  * in order to continue, but a limited amount of space prohibits
  * this condition from ever being met
  * 
+ * TODO: 
+ * Randomize size needs of each process on initialization
+ * 
+ * Implement way to clear number of children after they've filled
+ * so that the simulation runs for longer (give subprocesss a lifespan)
+ * 
+ * Detection: set a bool once one process fails to find space
+ * If after a certain amount of time, this bool hasn't switched
+ * End simulation, declare livelock
+ * 
  */
 
 #include <sst/core/sst_config.h> 
-#include <sst/core/interfaces/stringEvent.h> // Include stringEvent event type.
+#include <sst/core/interfaces/stringEvent.h>    // Include stringEvent event type.
 #include <sst/core/simulation.h>
 #include <sst/core/stopAction.h>
-#include "process.h" // Element header file.
+#include "process.h"                            // Element header file.
 
 using SST::Interfaces::StringEvent; 
 
@@ -21,25 +31,31 @@ process::process( SST::ComponentId_t id, SST::Params& params) : SST::Component(i
     output.init("livelockSim-" + getName() + "-> ", 1, 0, SST::Output::STDOUT);
 
 	// Get parameters
-	clock = params.find<std::string>("delay", "60s");
-	RandomSeed = params.find<int64_t>("randomseed", 151515);
+    maxSubProcesses = params.find<int64_t>("maxSubProcesses", 10);
+	clock = params.find<std::string>("tickFreq", "15s");
+    processID = params.find<int64_t>("processID", "1");
+	randSeed = params.find<int64_t>("randomseed", 151515);
 
 	// Register the clock
-	registerClock(clock, new SST::Clock::Handler<carGenerator>(this, &process::tick));
+	registerClock(clock, new SST::Clock::Handler<process>(this, &process::tick));
 	
-	// Initialize random
-	rng = new SST::RNG::MarsagliaRNG(11, RandomSeed);
+    // tell the simulator not to end without us
+	registerAsPrimaryComponent();
+	primaryComponentDoNotEndSim();
 
-    // Initalize maxSize
-    maxSubProcesses = (int)(rng->generateNextInt32()); // Generate a random 32-bit integer
-	maxSubProcesses = abs((int)(maxSubProcesses % 10)); // Generate a integer 0-9.
-    maxSubProcesses++; // ensure that our max size is greater than 0
-    numbSubProcesses = 0;
+	// Initialize random
+	rng = new SST::RNG::MarsagliaRNG(11, randSeed);
+
+    // // Initalize maxSize --> TODO: move randomization to .py
+    // maxSubProcesses = (int)(rng->generateNextInt32()); // Generate a random 32-bit integer
+	// maxSubProcesses = abs((int)(maxSubProcesses % 10)); // Generate a integer 0-9.
+    // maxSubProcesses++; // ensure that our max size is greater than 0
+    numSubProcesses = 0;
 	
-	// Configure our port
-	port = configureLink("port");
-	if ( !port ) {
-		output.fatal(CALL_INFO, -1, "Failed to configure port 'port'\n");
+	// Configure our port for requesting space from memory
+	memoryPort = configureLink("memoryPort", new SST::Event::Handler<process>(this, &process::handleEvent));
+	if ( !memoryPort ) {
+		output.fatal(CALL_INFO, -1, "Failed to configure port 'memoryPort'\n");
 	}
 }
 
@@ -48,25 +64,55 @@ process::~process() {
 
 }
 
-bool node::tick( SST::Cycle_t currentCycle ) {
+bool process::tick( SST::Cycle_t currentCycle ) {
     // Output current status
     output.output(CALL_INFO, "Number of children: %d\n", numSubProcesses);
     output.output(CALL_INFO, "Max number of children: %d\n", maxSubProcesses);
 	std::cout << "Sim-Time: " << getCurrentSimTimeNano() << std::endl;
 
     // check if al children have space allocated
-    if ( this.hasAllSubProcesses() ) {
+    if ( this->hasAllSubProcesses() ) {
         output.output(CALL_INFO, "Ready to continue\n");
+    } 
+
+    else {
+        // call addSubProcess in processMemory
+        memoryPort->send(new StringEvent(std::to_string(processID)));
     }
 
     // find a new spot in memory for another child
-    
+    // send space request (event) to processMemory
+    return true; // temp
 }
 
-void node::handleEvent(SST::Event *ev) {
-
+void process::liveLockDetect() {
+    // for now, immediatley exits
+    // in the future, should wait some time and recheck
+    std::cout << getName() << " detected a livelock. Ending simulation." << std::endl;
+	SST::StopAction exit;
+	exit.execute();
 }
 
-bool node::hasAllSubProcesses() {
+void process::handleEvent(SST::Event *ev) {
+    // if memory was full, wait 5 seconds and send another event request
+    // if memory was full:
+    // cantFindSpace = true;
+    // create new function to check livelock scenario
+    StringEvent *se = dynamic_cast<StringEvent*>(ev);
+	if ( se != NULL ) {
+        int spaceFree;
+        spaceFree = atoi(&(se->getString().c_str()[0]));
+        if(spaceFree) {
+            output.output(CALL_INFO, "Found a slot. Needs %d more children\n", maxSubProcesses - numSubProcesses);
+            numSubProcesses++;
+        } else {
+            output.output(CALL_INFO, "ran out of space");
+            cantFindSpace = true;
+            liveLockDetect();
+        }
+    }
+}
+
+bool process::hasAllSubProcesses() {
     return numSubProcesses >= maxSubProcesses;
 }
