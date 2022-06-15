@@ -17,8 +17,8 @@ class process : public SST::Component {
 
 	    void handleEvent(SST::Event *ev);
 
-		void setup();
-		void finish();
+		// void setup();
+		// void finish();
 
 		void liveLockDetect();
 

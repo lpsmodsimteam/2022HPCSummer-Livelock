@@ -72,17 +72,18 @@ bool process::tick( SST::Cycle_t currentCycle ) {
 
     // check if al children have space allocated
     if ( this->hasAllSubProcesses() ) {
-        output.output(CALL_INFO, "Ready to continue\n");
+        output.output(CALL_INFO, "***COMPLETE***\n");
     } 
 
     else {
         // call addSubProcess in processMemory
+        output.output(CALL_INFO, "visiting processMemory\n");
         memoryPort->send(new StringEvent(std::to_string(processID)));
     }
 
     // find a new spot in memory for another child
     // send space request (event) to processMemory
-    return true; // temp
+    return false; // temp
 }
 
 void process::liveLockDetect() {
@@ -102,11 +103,11 @@ void process::handleEvent(SST::Event *ev) {
 	if ( se != NULL ) {
         int spaceFree;
         spaceFree = atoi(&(se->getString().c_str()[0]));
-        if(spaceFree) {
-            output.output(CALL_INFO, "Found a slot. Needs %d more children\n", maxSubProcesses - numSubProcesses);
+        if(!spaceFree) {
             numSubProcesses++;
+            output.output(CALL_INFO, "Found a slot. Needs %d more children\n", maxSubProcesses - numSubProcesses);
         } else {
-            output.output(CALL_INFO, "ran out of space");
+            output.output(CALL_INFO, "ran out of space\n");
             cantFindSpace = true;
             liveLockDetect();
         }

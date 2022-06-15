@@ -15,10 +15,10 @@ class processMemory : public SST::Component {
         processMemory( SST::ComponentId_t id, SST::Params& params ); // Constructor
 	    ~processMemory(); // Deconstructor
 
-        void setup();
-	    void finish();
+        // void setup();
+	    // void finish();
 
-	    bool tick( SST::Cycle_t currentCycle);
+	    // bool tick( SST::Cycle_t currentCycle);
 
 	    void handleEvent(SST::Event *ev);
 
@@ -59,7 +59,7 @@ class processMemory : public SST::Component {
         int memory_size;
         int memory_available;
         bool memory_full;
-        std::string clock; // Defining a clock which can be described via unit math as a string (?).
+        // std::string clock; // Defining a clock which can be described via unit math as a string (?).
 
 		SST::Link *process1port; // Pointer to queue port  
         SST::Link *process2port; // Pointer to queue port  

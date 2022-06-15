@@ -19,11 +19,13 @@ processMemory::processMemory ( SST::ComponentId_t id, SST::Params& params) : SST
     output.init("processMemory-" + getName() + "-> ", 1, 0, SST::Output::STDOUT);
 
 	// Get parameters
-	clock = params.find<std::string>("tickFreq", "15s");
+	// clock = params.find<std::string>("tickFreq", "15s");
 	randSeed = params.find<int64_t>("randomseed", 151515);
+    memory_size = 25;
+    memory_available = 25;
 
 	// Register the clock
-	registerClock(clock, new SST::Clock::Handler<processMemory>(this, &processMemory::tick));
+	// registerClock(clock, new SST::Clock::Handler<processMemory>(this, &processMemory::tick));
 
 	// Initialize random
 	rng = new SST::RNG::MarsagliaRNG(11, randSeed);
@@ -62,8 +64,10 @@ void processMemory::handleEvent(SST::Event *ev) {
         processID = atoi(&(se->getString().c_str()[0]));
         if (!memoryFull()) {
             memory_available--;
+            output.output(CALL_INFO, "Found a slot. This many left: %d more children\n", memory_available);
             returnValue = MEMORY_NOT_FULL;
         } else {
+            output.output(CALL_INFO, "memory is full\n");
             returnValue = MEMORY_FULL;
         }
         switch (processID)
@@ -97,5 +101,5 @@ int processMemory::memoryAvailable() {
 }
 
 bool processMemory::memoryFull() {
-    return memory_full;
+    return memory_available <= 0;
 }
