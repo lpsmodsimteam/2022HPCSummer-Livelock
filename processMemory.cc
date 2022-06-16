@@ -22,8 +22,9 @@ processMemory::processMemory ( SST::ComponentId_t id, SST::Params& params) : SST
 	// Get parameters
 	// clock = params.find<std::string>("tickFreq", "15s");
 	randSeed = params.find<int64_t>("randomseed", 151515);
-    memory_size = 100;
-    memory_available = 100;
+    memory_size = 1000;
+    memory_available = 1000;
+    processesComplete = 0;
 
 	// Register the clock
 	// registerClock(clock, new SST::Clock::Handler<processMemory>(this, &processMemory::tick));
@@ -55,6 +56,16 @@ processMemory::~processMemory() {
     
 }
 
+// bool processMemory::tick( SST::Cycle_t currentCycle ) {
+//     output.output(CALL_INFO, "Process complete value: %d\n", processesComplete);
+//     if (processesComplete == 16) {
+//         std::cout << getName() << ": All processes found space. ending simulation." << std::endl;
+// 	    SST::StopAction exit;
+// 	    exit.execute();
+//     }
+//     return false;
+// }
+
 void processMemory::handleEvent(SST::Event *ev) {
     // recieves memory requests, sends out whether or not it had space
     // StringEvent *se = dynamic_cast<StringEvent*>(ev);
@@ -63,7 +74,17 @@ void processMemory::handleEvent(SST::Event *ev) {
         int processID;
         int returnValue;
         processID = memev->memreq.pid;
-        if (!memoryFull()) {
+        if (memev->memreq.status == COMPLETE) {
+            output.output(CALL_INFO, "Has enough children\n");
+            processesComplete++;
+            output.output(CALL_INFO, "Process complete value: %d\n", processesComplete);
+            if (processesComplete >= 4) {
+                std::cout << getName() << ": All processes found space. ending simulation." << std::endl;
+	            SST::StopAction exit;
+	            exit.execute();
+            }
+            return;
+        } else if (!memoryFull()) {
             memory_available--;
             output.output(CALL_INFO, "Found a slot. This many left: %d more children\n", memory_available);
             returnValue = MEMORY_NOT_FULL;
@@ -71,6 +92,7 @@ void processMemory::handleEvent(SST::Event *ev) {
             output.output(CALL_INFO, "memory is full\n");
             returnValue = MEMORY_FULL;
         }
+        
         // switch case to make sure we alert the right process port
         switch (processID)
         {

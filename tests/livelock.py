@@ -5,20 +5,20 @@ process_memory = sst.Component("Process Memory", "livelock.processMemory")
 process_one = sst.Component("Process 1", "livelock.process")
 process_one.addParams(
     {
-        "maxSubProcesses": "80",  # max message queue size.
+        "maxSubProcesses": "10",  # max message queue size.
         "tickFreq": "1ns",  # simulated time node runs at.
         "processID": "1" # ID for processMemory to identify ports
     }
 )
 
 process_two = sst.Component("Process 2", "livelock.process")
-process_two.addParams({"maxSubProcesses": "70", "tickFreq": "15ns", "processID": "2"})
+process_two.addParams({"maxSubProcesses": "10", "tickFreq": "15ns", "processID": "2"})
 
 process_three = sst.Component("Process 3", "livelock.process")
-process_three.addParams({"maxSubProcesses": "100", "tickFreq": "10ns", "processID": "3"})
+process_three.addParams({"maxSubProcesses": "10", "tickFreq": "10ns", "processID": "3"})
 
 process_four = sst.Component("Process 4", "livelock.process")
-process_four.addParams({"maxSubProcesses": "50", "tickFreq": "7ns", "processID": "4"})
+process_four.addParams({"maxSubProcesses": "10", "tickFreq": "7ns", "processID": "4"})
 
 
 # Connect the nodes by their ports.

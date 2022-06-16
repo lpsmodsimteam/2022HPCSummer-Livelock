@@ -69,7 +69,11 @@ bool process::tick( SST::Cycle_t currentCycle ) {
 	std::cout << "Sim-Time: " << getCurrentSimTimeNano() << std::endl;
 
     // check if al children have space allocated
-    if ( this->hasAllSubProcesses() ) {
+    if ( hasAllSubProcesses() ) {
+        std::string processType = "temp";
+		CompletionStatus status = COMPLETE;
+		struct MemoryRequest memreq = { processID, processType, status };
+		memoryPort->send(new MemoryRequestEvent(memreq));
         output.output(CALL_INFO, "***COMPLETE***\n");
     } 
 

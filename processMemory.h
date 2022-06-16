@@ -57,6 +57,8 @@ class processMemory : public SST::Component {
         int memory_size;
         int memory_available;
         bool memory_full;
+        int processesComplete;
+        
         // std::string clock; // Defining a clock which can be described via unit math as a string (?).
 
         // list of ports defined for each process connected to memory
