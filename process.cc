@@ -12,10 +12,6 @@
  * Implement way to clear number of children after they've filled
  * so that the simulation runs for longer (give subprocesss a lifespan)
  * 
- * Detection: set a bool once one process fails to find space
- * If after a certain amount of time, this bool hasn't switched
- * End simulation, declare livelock
- * 
  */
 
 #include <sst/core/sst_config.h> 
@@ -42,6 +38,8 @@ process::process( SST::ComponentId_t id, SST::Params& params) : SST::Component(i
     // tell the simulator not to end without us
 	registerAsPrimaryComponent();
 	primaryComponentDoNotEndSim();
+
+    memoryFilled = 0;
 
 	// Initialize random
 	rng = new SST::RNG::MarsagliaRNG(11, randSeed);
@@ -77,21 +75,35 @@ bool process::tick( SST::Cycle_t currentCycle ) {
 
     else {
         // call addSubProcess in processMemory
+
+        // Construct Status message.
+        std::string processType = "temp";
+		CompletionStatus status = INCOMPLETE;
+		struct MemoryRequest memreq = { processID, processType, status };
+		memoryPort->send(new MemoryRequestEvent(memreq));
+
         output.output(CALL_INFO, "visiting processMemory\n");
-        memoryPort->send(new StringEvent(std::to_string(processID)));
+        // memoryPort->send(new StringEvent(std::to_string(processID)));
     }
 
-    // find a new spot in memory for another child
-    // send space request (event) to processMemory
-    return false; // temp
+    // keep requesting space until everyone completes, or a livelock is detected
+    return false; 
 }
 
+
 void process::liveLockDetect() {
-    // for now, immediatley exits
-    // in the future, should wait some time and recheck
-    std::cout << getName() << " detected a livelock. Ending simulation." << std::endl;
-	SST::StopAction exit;
-	exit.execute();
+    // if this is the first time we detect memory filling, note down time
+    if(memoryFilled == 0) {
+        memoryFilled = getCurrentSimTimeNano();
+    // if 5000 ns has passed and we haven't found space, declare a livelock
+    } else if(getCurrentSimTimeNano() - memoryFilled > 5000) {
+        std::cout << getName() << " detected a livelock. Ending simulation." << std::endl;
+	    SST::StopAction exit;
+	    exit.execute();
+    // still continuously checking memory, update system
+    } else {
+        output.output(CALL_INFO, "Currently waiting, %ld ns elapsed\n", getCurrentSimTimeNano() - memoryFilled);
+    }
 }
 
 void process::handleEvent(SST::Event *ev) {
@@ -103,8 +115,9 @@ void process::handleEvent(SST::Event *ev) {
 	if ( se != NULL ) {
         int spaceFree;
         spaceFree = atoi(&(se->getString().c_str()[0]));
-        if(!spaceFree) {
+        if(spaceFree) {
             numSubProcesses++;
+            memoryFilled = 0; // reset time counter for livelock detection
             output.output(CALL_INFO, "Found a slot. Needs %d more children\n", maxSubProcesses - numSubProcesses);
         } else {
             output.output(CALL_INFO, "ran out of space\n");

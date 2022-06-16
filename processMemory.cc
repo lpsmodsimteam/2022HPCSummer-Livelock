@@ -7,12 +7,13 @@
 #include <sst/core/interfaces/stringEvent.h> // Include stringEvent event type.
 #include <sst/core/simulation.h>
 #include <sst/core/stopAction.h>
-#include "processMemory.h" // Element header file.
+#include "processMemory.h"  
+#include "process.h"                 // Element header file.
 
 using SST::Interfaces::StringEvent; 
 
-#define MEMORY_NOT_FULL 0
-#define MEMORY_FULL 1
+#define MEMORY_NOT_FULL 1
+#define MEMORY_FULL 0
 
 // Constructor definition
 processMemory::processMemory ( SST::ComponentId_t id, SST::Params& params) : SST::Component(id) {
@@ -21,8 +22,8 @@ processMemory::processMemory ( SST::ComponentId_t id, SST::Params& params) : SST
 	// Get parameters
 	// clock = params.find<std::string>("tickFreq", "15s");
 	randSeed = params.find<int64_t>("randomseed", 151515);
-    memory_size = 25;
-    memory_available = 25;
+    memory_size = 100;
+    memory_available = 100;
 
 	// Register the clock
 	// registerClock(clock, new SST::Clock::Handler<processMemory>(this, &processMemory::tick));
@@ -55,13 +56,13 @@ processMemory::~processMemory() {
 }
 
 void processMemory::handleEvent(SST::Event *ev) {
-    // mainly recieves events, send back true or false to process
-    // if they successfully found space
-    StringEvent *se = dynamic_cast<StringEvent*>(ev);
-	if ( se != NULL ) {
+    // recieves memory requests, sends out whether or not it had space
+    // StringEvent *se = dynamic_cast<StringEvent*>(ev);
+    MemoryRequestEvent *memev = dynamic_cast<MemoryRequestEvent*>(ev);
+	if ( memev != NULL ) {
         int processID;
         int returnValue;
-        processID = atoi(&(se->getString().c_str()[0]));
+        processID = memev->memreq.pid;
         if (!memoryFull()) {
             memory_available--;
             output.output(CALL_INFO, "Found a slot. This many left: %d more children\n", memory_available);
@@ -70,6 +71,7 @@ void processMemory::handleEvent(SST::Event *ev) {
             output.output(CALL_INFO, "memory is full\n");
             returnValue = MEMORY_FULL;
         }
+        // switch case to make sure we alert the right process port
         switch (processID)
         {
         case 1:
@@ -90,7 +92,7 @@ void processMemory::handleEvent(SST::Event *ev) {
     }
 }
 
-// hard-coded size for memory
+// hard-coded size for memory at the moment
 int processMemory::memorySize() {
     // return sizeof(memorySpace)/sizeof(memorySpace[0]);
     return memory_size;

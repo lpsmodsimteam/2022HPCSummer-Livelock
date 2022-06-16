@@ -19,7 +19,6 @@ class processMemory : public SST::Component {
 	    // void finish();
 
 	    // bool tick( SST::Cycle_t currentCycle);
-
 	    void handleEvent(SST::Event *ev);
 
         // *** for now, just increment/decrement space, not actually
@@ -29,7 +28,6 @@ class processMemory : public SST::Component {
         int memorySize();
 
         int memoryAvailable();
-
         bool memoryFull();
 
         // Register the component for lookup via sst-info
@@ -53,17 +51,18 @@ class processMemory : public SST::Component {
 ;
     private:
         SST::Output output;
-        int64_t randSeed; // Seed for MarsagliaRNG
-		SST::RNG::MarsagliaRNG *rng; //
+        int64_t randSeed;               // Seed for MarsagliaRNG
+		SST::RNG::MarsagliaRNG *rng;
 
         int memory_size;
         int memory_available;
         bool memory_full;
         // std::string clock; // Defining a clock which can be described via unit math as a string (?).
 
-		SST::Link *process1port; // Pointer to queue port  
-        SST::Link *process2port; // Pointer to queue port  
-        SST::Link *process3port; // Pointer to queue port  
-        SST::Link *process4port; // Pointer to queue port  
+        // list of ports defined for each process connected to memory
+		SST::Link *process1port;  
+        SST::Link *process2port;  
+        SST::Link *process3port; 
+        SST::Link *process4port;   
 };
 #endif
