@@ -10,6 +10,7 @@
 enum CompletionStatus {
 	COMPLETE,
 	INCOMPLETE,
+	RESETTING
 };
 
 // Struct for a Message
@@ -87,6 +88,8 @@ class process : public SST::Component {
 
 		std::string clock; 			// Defining a clock which can be described via unit math as a string (?).
 		SST::SimTime_t memoryFilled;// keeps track of how long we've been requesting for memory
+		SST::SimTime_t startTask;
+		SST::SimTime_t taskLength;
 		SST::Link *memoryPort; 		// Pointer to processMemeory port  
 
 };

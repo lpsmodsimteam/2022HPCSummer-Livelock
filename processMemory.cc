@@ -74,11 +74,15 @@ void processMemory::handleEvent(SST::Event *ev) {
         int processID;
         int returnValue;
         processID = memev->memreq.pid;
-        if (memev->memreq.status == COMPLETE) {
+        if (memev->memreq.status == RESETTING) {
+            int restoreSpace = std::stoi(memev->memreq.processType);
+            memory_available += restoreSpace;
+            output.output(CALL_INFO, "Process %d complete, restoring %d slots\n", processID, restoreSpace);
+        } else if (memev->memreq.status == COMPLETE) {
             output.output(CALL_INFO, "Has enough children\n");
             processesComplete++;
             output.output(CALL_INFO, "Process complete value: %d\n", processesComplete);
-            if (processesComplete >= 4) {
+            if (processesComplete >= 25) {
                 std::cout << getName() << ": All processes found space. ending simulation." << std::endl;
 	            SST::StopAction exit;
 	            exit.execute();

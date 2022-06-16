@@ -9,8 +9,10 @@
  * TODO: 
  * Randomize size needs of each process on initialization
  * 
- * Implement way to clear number of children after they've filled
- * so that the simulation runs for longer (give subprocesss a lifespan)
+ * create a physical queue of messages instead of keeping track of size
+ * 
+ * Implement subcomponents to clean the process of checking if all
+ * the processes have enough space allocated
  * 
  */
 
@@ -40,6 +42,7 @@ process::process( SST::ComponentId_t id, SST::Params& params) : SST::Component(i
 	primaryComponentDoNotEndSim();
 
     memoryFilled = 0;
+    startTask = 0;
 
 	// Initialize random
 	rng = new SST::RNG::MarsagliaRNG(11, randSeed);
@@ -49,6 +52,11 @@ process::process( SST::ComponentId_t id, SST::Params& params) : SST::Component(i
 	// maxSubProcesses = abs((int)(maxSubProcesses % 10)); // Generate a integer 0-9.
     // maxSubProcesses++; // ensure that our max size is greater than 0
     numSubProcesses = 0;
+
+    // define length of this process' task
+    taskLength = (int)(rng->generateNextInt32()); // Generate a random 32-bit integer
+	taskLength = abs((int)(maxSubProcesses % 20)); // Generate a integer less than 10,000.
+    taskLength++; // ensure that our max size is greater than 0
 	
 	// Configure our port for requesting space from memory
 	memoryPort = configureLink("memoryPort", new SST::Event::Handler<process>(this, &process::handleEvent));
@@ -70,11 +78,28 @@ bool process::tick( SST::Cycle_t currentCycle ) {
 
     // check if al children have space allocated
     if ( hasAllSubProcesses() ) {
+        // alert processMemory that we have enough space
         std::string processType = "temp";
 		CompletionStatus status = COMPLETE;
 		struct MemoryRequest memreq = { processID, processType, status };
 		memoryPort->send(new MemoryRequestEvent(memreq));
         output.output(CALL_INFO, "***COMPLETE***\n");
+
+        // simulate a random amount of time to hold these subprocesses in order to complete a task
+        if (startTask == 0) {
+            output.output(CALL_INFO, "***starting task simulation***\n");
+            startTask = getCurrentSimTimeNano();
+        }  else if (getCurrentSimTimeNano() - startTask > 0) {
+            // after task has "been completed", clear children + this processes' space in processMemory
+            output.output(CALL_INFO, "completed process, now resetting\n");
+            numSubProcesses = 0;
+
+            std::string processType = std::to_string(maxSubProcesses);
+		    CompletionStatus status = RESETTING;
+		    struct MemoryRequest memreq = { processID, processType, status };
+		    memoryPort->send(new MemoryRequestEvent(memreq));
+        }
+
     } 
 
     else {

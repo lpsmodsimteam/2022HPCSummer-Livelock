@@ -12,13 +12,13 @@ process_one.addParams(
 )
 
 process_two = sst.Component("Process 2", "livelock.process")
-process_two.addParams({"maxSubProcesses": "10", "tickFreq": "15ns", "processID": "2"})
+process_two.addParams({"maxSubProcesses": "500", "tickFreq": "15ns", "processID": "2"})
 
 process_three = sst.Component("Process 3", "livelock.process")
-process_three.addParams({"maxSubProcesses": "10", "tickFreq": "10ns", "processID": "3"})
+process_three.addParams({"maxSubProcesses": "300", "tickFreq": "10ns", "processID": "3"})
 
 process_four = sst.Component("Process 4", "livelock.process")
-process_four.addParams({"maxSubProcesses": "10", "tickFreq": "7ns", "processID": "4"})
+process_four.addParams({"maxSubProcesses": "600", "tickFreq": "7ns", "processID": "4"})
 
 
 # Connect the nodes by their ports.
