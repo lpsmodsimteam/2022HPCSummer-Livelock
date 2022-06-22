@@ -1,8 +1,9 @@
 # Tell Make that these are NOT files, just targets
 .PHONY: all install test uninstall clean sst-info sst-help help
+# .PHONY: all install test uninstall clean sst-info sst-help viz_makefile viz_dot black mypy help 
 
 # shortcut for running anything inside the singularity container
-CONTAINER=/usr/local/bin/sstpackage-11.1.0-ubuntu-20.04.sif
+CONTAINER=/usr/local/bin/additions.sif
 SINGULARITY=singularity exec $(CONTAINER)
 
 # SST environment variables (gathered from the singularity container)
@@ -49,7 +50,7 @@ install: $(CONTAINER) ~/.sst/sstsimulator.conf lib$(PACKAGE).so
 
 # Run the tests for the model
 test: $(CONTAINER) install
-	$(SINGULARITY) sst tests/livelock.py
+	$(SINGULARITY) sst tests/diningPhilosopher.py
 
 # Unregister the model with SST
 uninstall: $(CONTAINER) ~/.sst/sstsimulator.conf
@@ -64,6 +65,21 @@ sst-info: $(CONTAINER)
 
 sst-help: $(CONTAINER)
 	$(SINGULARITY) sst --help
+
+# viz_makefile: $(CONTAINER)
+# 	$(SINGULARITY) makefile2dot --output $(PACKAGE)makefile.dot
+# 	$(SINGULARITY) dot -Tpng $(PACKAGE)makefile.dot > Makefile_viz.png
+
+# # Run the tests for the model and output a dot file which is converted to a png file.
+# viz_dot: $(CONTAINER) install
+# 	$(SINGULARITY) sst tests/$(PACKAGE).py --output-dot=$(PACKAGE).dot --dot-verbosity=6
+# 	$(SINGULARITY) dot -Tpng $(PACKAGE).dot > $(PACKAGE).png
+
+# black: $(CONTAINER)
+# 	$(SINGULARITY) black tests/*.py
+
+# mypy: $(CONTAINER)
+# 	$(SINGULARITY) mypy tests/*.py
 
 help:
 	@echo "Target     | Description"
