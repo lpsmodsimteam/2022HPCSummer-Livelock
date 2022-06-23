@@ -10,16 +10,16 @@ philosopherOne.addParams(
 )
 
 philosopherTwo = sst.Component("Philosopher 2", "livelock.diningPhilosopher")
-philosopherTwo.addParams({"thinkingDuration": "15s", "randomseed": "151515", "eatingduration": "2000"})
+philosopherTwo.addParams({"thinkingDuration": "15s", "randomseed": "123", "eatingduration": "2000"})
 
 philosopherThree = sst.Component("Philosopher 3", "livelock.diningPhilosopher")
-philosopherThree.addParams({"thinkingDuration": "15s", "randomseed": "151515", "eatingduration": "2000"})
+philosopherThree.addParams({"thinkingDuration": "15s", "randomseed": "348734", "eatingduration": "2000"})
 
 philosopherFour = sst.Component("Philosopher 4", "livelock.diningPhilosopher")
-philosopherFour.addParams({"thinkingDuration": "15s", "randomseed": "151515", "eatingduration": "2000"})
+philosopherFour.addParams({"thinkingDuration": "15s", "randomseed": "123", "eatingduration": "2000"})
 
 philosopherFive = sst.Component("Philosopher 5", "livelock.diningPhilosopher")
-philosopherFive.addParams({"thinkingDuration": "15s", "randomseed": "151515", "eatingduration": "2000"})
+philosopherFive.addParams({"thinkingDuration": "15s", "randomseed": "348734", "eatingduration": "2000"})
 
 
 # Connect the nodes by their ports.

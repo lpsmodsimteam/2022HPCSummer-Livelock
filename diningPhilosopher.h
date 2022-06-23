@@ -55,6 +55,8 @@ public:
 	diningPhilosopher( SST::ComponentId_t id, SST::Params& params );
 	~diningPhilosopher();
 
+	void setup();
+
 	bool clockTick( SST::Cycle_t currentCycle );
     void handleEvent(SST::Event *ev, std::string from);
 
@@ -86,6 +88,7 @@ private:
 	SST::RNG::MarsagliaRNG* rng;
 	std::string clock;
 	int64_t RandomSeed;
+	bool firstPass;
     SST::SimTime_t eatingDuration;
     SST::SimTime_t startEating;
 	SST::Link *philosopherLeft;
