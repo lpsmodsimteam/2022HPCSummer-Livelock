@@ -1,6 +1,6 @@
 # Tell Make that these are NOT files, just targets
-.PHONY: all install test uninstall clean sst-info sst-help help
-# .PHONY: all install test uninstall clean sst-info sst-help viz_makefile viz_dot black mypy help 
+# .PHONY: all install test uninstall clean sst-info sst-help help
+.PHONY: all install test uninstall clean sst-info sst-help viz_makefile viz_dot black mypy help 
 
 # shortcut for running anything inside the singularity container
 CONTAINER=/usr/local/bin/additions.sif
@@ -67,20 +67,20 @@ sst-info: $(CONTAINER)
 sst-help: $(CONTAINER)
 	$(SINGULARITY) sst --help
 
-# viz_makefile: $(CONTAINER)
-# 	$(SINGULARITY) makefile2dot --output $(PACKAGE)makefile.dot
-# 	$(SINGULARITY) dot -Tpng $(PACKAGE)makefile.dot > Makefile_viz.png
+viz_makefile: $(CONTAINER)
+	$(SINGULARITY) makefile2dot --output $(PACKAGE)makefile.dot
+	$(SINGULARITY) dot -Tpng $(PACKAGE)makefile.dot > Makefile_viz.png
 
-# # Run the tests for the model and output a dot file which is converted to a png file.
-# viz_dot: $(CONTAINER) install
-# 	$(SINGULARITY) sst tests/$(PACKAGE).py --output-dot=$(PACKAGE).dot --dot-verbosity=6
-# 	$(SINGULARITY) dot -Tpng $(PACKAGE).dot > $(PACKAGE).png
+# Run the tests for the model and output a dot file which is converted to a png file.
+viz_dot: $(CONTAINER) install
+	$(SINGULARITY) sst tests/diningPhilosopher.py --output-dot=$(PACKAGE).dot --dot-verbosity=6
+	$(SINGULARITY) dot -Tpng $(PACKAGE).dot > $(PACKAGE).png
 
-# black: $(CONTAINER)
-# 	$(SINGULARITY) black tests/*.py
+black: $(CONTAINER)
+	$(SINGULARITY) black tests/*.py
 
-# mypy: $(CONTAINER)
-# 	$(SINGULARITY) mypy tests/*.py
+mypy: $(CONTAINER)
+	$(SINGULARITY) mypy tests/*.py
 
 help:
 	@echo "Target     | Description"

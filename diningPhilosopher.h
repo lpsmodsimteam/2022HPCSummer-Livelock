@@ -58,6 +58,7 @@ public:
 	void setup();
 
 	bool clockTick( SST::Cycle_t currentCycle );
+	bool waitingTick( SST::Cycle_t currentCycle );
     void handleEvent(SST::Event *ev, std::string from);
 
 	// Register the component
@@ -87,10 +88,11 @@ private:
 	SST::Output output;
 	SST::RNG::MarsagliaRNG* rng;
 	std::string clock;
+	std::string waitingClock;
 	int64_t RandomSeed;
 	bool firstPass;
-    SST::SimTime_t eatingDuration;
-    SST::SimTime_t startEating;
+    int64_t eatingDuration;
+  	int64_t startEating;
 	SST::Link *philosopherLeft;
     SST::Link *philosopherRight;
 

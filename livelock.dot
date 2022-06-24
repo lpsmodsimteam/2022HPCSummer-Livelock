@@ -1,0 +1,49 @@
+graph "sst_simulation" {
+overlap=scale;
+splines=spline;
+node [shape=record];
+graph [style=invis];
+
+subgraph cluster_0 {
+0 [label="{<main> Philosopher 1\nlivelock.diningPhilosopher |
+<philosopherRight> Port: philosopherRight |
+<philosopherLeft> Port: philosopherLeft}"];
+
+}
+
+subgraph cluster_1 {
+1 [label="{<main> Philosopher 2\nlivelock.diningPhilosopher |
+<philosopherLeft> Port: philosopherLeft |
+<philosopherRight> Port: philosopherRight}"];
+
+}
+
+subgraph cluster_2 {
+2 [label="{<main> Philosopher 3\nlivelock.diningPhilosopher |
+<philosopherLeft> Port: philosopherLeft |
+<philosopherRight> Port: philosopherRight}"];
+
+}
+
+subgraph cluster_3 {
+3 [label="{<main> Philosopher 4\nlivelock.diningPhilosopher |
+<philosopherLeft> Port: philosopherLeft |
+<philosopherRight> Port: philosopherRight}"];
+
+}
+
+subgraph cluster_4 {
+4 [label="{<main> Philosopher 5\nlivelock.diningPhilosopher |
+<philosopherLeft> Port: philosopherLeft |
+<philosopherRight> Port: philosopherRight}"];
+
+}
+
+
+0:"philosopherRight" -- 1:"philosopherLeft"
+1:"philosopherRight" -- 2:"philosopherLeft"
+2:"philosopherRight" -- 3:"philosopherLeft"
+3:"philosopherRight" -- 4:"philosopherLeft"
+4:"philosopherRight" -- 0:"philosopherLeft"
+
+}
