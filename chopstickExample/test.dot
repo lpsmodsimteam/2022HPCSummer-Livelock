@@ -1,0 +1,89 @@
+graph "sst_simulation" {
+overlap=scale;
+splines=spline;
+node [shape=record];
+graph [style=invis];
+
+subgraph cluster_0 {
+0 [label="{<main> Philosopher 1\ntest.dine |
+<leftChopstick> Port: leftChopstick |
+<rightChopstick> Port: rightChopstick}"];
+
+}
+
+subgraph cluster_1 {
+1 [label="{<main> Philosopher 2\ntest.dine |
+<leftChopstick> Port: leftChopstick |
+<rightChopstick> Port: rightChopstick}"];
+
+}
+
+subgraph cluster_2 {
+2 [label="{<main> Philosopher 3\ntest.dine |
+<leftChopstick> Port: leftChopstick |
+<rightChopstick> Port: rightChopstick}"];
+
+}
+
+subgraph cluster_3 {
+3 [label="{<main> Philosopher 4\ntest.dine |
+<leftChopstick> Port: leftChopstick |
+<rightChopstick> Port: rightChopstick}"];
+
+}
+
+subgraph cluster_4 {
+4 [label="{<main> Philosopher 5\ntest.dine |
+<leftChopstick> Port: leftChopstick |
+<rightChopstick> Port: rightChopstick}"];
+
+}
+
+subgraph cluster_5 {
+5 [label="{<main> L1R2\ntest.chopsticks |
+<rightPhilosopher> Port: rightPhilosopher |
+<leftPhilosopher> Port: leftPhilosopher}"];
+
+}
+
+subgraph cluster_6 {
+6 [label="{<main> L2R3\ntest.chopsticks |
+<rightPhilosopher> Port: rightPhilosopher |
+<leftPhilosopher> Port: leftPhilosopher}"];
+
+}
+
+subgraph cluster_7 {
+7 [label="{<main> L3R4\ntest.chopsticks |
+<rightPhilosopher> Port: rightPhilosopher |
+<leftPhilosopher> Port: leftPhilosopher}"];
+
+}
+
+subgraph cluster_8 {
+8 [label="{<main> L4R5\ntest.chopsticks |
+<rightPhilosopher> Port: rightPhilosopher |
+<leftPhilosopher> Port: leftPhilosopher}"];
+
+}
+
+subgraph cluster_9 {
+9 [label="{<main> L5R1\ntest.chopsticks |
+<leftPhilosopher> Port: leftPhilosopher |
+<rightPhilosopher> Port: rightPhilosopher}"];
+
+}
+
+
+0:"leftChopstick" -- 5:"rightPhilosopher"
+0:"rightChopstick" -- 9:"leftPhilosopher"
+1:"leftChopstick" -- 6:"rightPhilosopher"
+1:"rightChopstick" -- 5:"leftPhilosopher"
+2:"leftChopstick" -- 7:"rightPhilosopher"
+2:"rightChopstick" -- 6:"leftPhilosopher"
+3:"leftChopstick" -- 8:"rightPhilosopher"
+3:"rightChopstick" -- 7:"leftPhilosopher"
+4:"leftChopstick" -- 9:"rightPhilosopher"
+4:"rightChopstick" -- 8:"leftPhilosopher"
+
+}
