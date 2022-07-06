@@ -23,7 +23,7 @@ public:
 	// Register the component
 	SST_ELI_REGISTER_COMPONENT(
 		diningTable, // class
-		"livelock", // element library
+		"livelock2", // element library
 		"diningTable", // component
 		SST_ELI_ELEMENT_VERSION( 1, 0, 0 ),
 		"table to hold set of chopsticks",

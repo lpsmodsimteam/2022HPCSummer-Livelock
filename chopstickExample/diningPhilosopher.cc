@@ -33,6 +33,10 @@ diningPhilosopher::diningPhilosopher( SST::ComponentId_t id, SST::Params& params
     eatingDuration = params.find<int64_t>("eatingduration", 2000);
     philid = params.find<int8_t>("id", 1);
 
+    eatingCounter = 0;
+    thinkingCounter = 0;
+    hungryCounter = 0;
+
 	// Register the clock
 	registerClock(clock, new SST::Clock::Handler<diningPhilosopher>(this, &diningPhilosopher::clockTick));
 	registerClock(waitingClock, new SST::Clock::Handler<diningPhilosopher>(this, &diningPhilosopher::waitingTick));
@@ -62,6 +66,11 @@ diningPhilosopher::diningPhilosopher( SST::ComponentId_t id, SST::Params& params
 	if ( !rightChopstick ) {
 		output.fatal(CALL_INFO, -1, "Failed to configure port 'rightChopstick'\n");
 	}
+
+    // Setup statistics
+	eatingCounterStats = registerStatistic<int>("eatingCounterStats");
+	thinkingCounterStats = registerStatistic<int>("thinkingCounterStats");
+	hungryCounterStats = registerStatistic<int>("hungryCounterStats");
 }
 
 diningPhilosopher::~diningPhilosopher() {
@@ -86,6 +95,9 @@ void diningPhilosopher::setup() {
 bool diningPhilosopher::clockTick( SST::Cycle_t currentCycle ) {
     // Output current status
     outputTickInfo();
+    performStatisticOutput(eatingCounterStats);
+    performStatisticOutput(thinkingCounterStats);
+    performStatisticOutput(hungryCounterStats);
 
     // decide if/who to request a chopstick
     // only request one chopstick per tick
@@ -106,6 +118,8 @@ bool diningPhilosopher::clockTick( SST::Cycle_t currentCycle ) {
         // both hungry and has both chopsticks, can eat
         if (holdingLeftChopstick && holdingRightChopstick) {
             status = EATING;
+            eatingCounter++;
+            eatingCounterStats->addData(eatingCounter);
             startEating = getCurrentSimTimeNano();
             output.output(CALL_INFO, "is now eating\n");
         } 
@@ -116,6 +130,8 @@ bool diningPhilosopher::clockTick( SST::Cycle_t currentCycle ) {
     else if (status == THINKING) {
         output.output(CALL_INFO, "is now thinking\n");
         status = HUNGRY;
+        hungryCounter++;
+        hungryCounterStats->addData(hungryCounter);
     }
 
     // check whether or not we're done eating
@@ -123,6 +139,8 @@ bool diningPhilosopher::clockTick( SST::Cycle_t currentCycle ) {
         if (getCurrentSimTimeNano() - startEating >= eatingDuration) {
             output.output(CALL_INFO, "is now full, switched to thinking\n");
             status = THINKING;
+            thinkingCounter++;
+            thinkingCounterStats->addData(thinkingCounter);
             if (holdingLeftChopstick) {
                 output.output(CALL_INFO, "is now sending back a left chopstick with id %d\n", philid);
 		        struct PhilosopherRequest chopreq = { philid, LEFT, SENDING };
@@ -152,11 +170,17 @@ bool diningPhilosopher::waitingTick( SST::Cycle_t currentCycle ) {
 		        struct PhilosopherRequest chopreq = { philid, LEFT, SENDING };
 		        leftChopstick->send(new PhilosopherRequestEvent(chopreq));
                 holdingLeftChopstick = false;
+                status = THINKING;
+                thinkingCounter++;
+                thinkingCounterStats->addData(thinkingCounter);
             } else if (holdingRightChopstick) {
                 output.output(CALL_INFO, "is now sending back a right chopstick with id %d\n", philid);
 		        struct PhilosopherRequest chopreq = { philid, RIGHT, SENDING };
 		        rightChopstick->send(new PhilosopherRequestEvent(chopreq));
                 holdingRightChopstick = false;
+                status = THINKING;
+                thinkingCounter++;
+                thinkingCounterStats->addData(thinkingCounter);
             }
     }
     return false;
@@ -196,6 +220,8 @@ void diningPhilosopher::handleEvent(SST::Event *ev, std::string from) {
         if (holdingLeftChopstick && holdingRightChopstick) {
             output.output(CALL_INFO, "obtained both chopsticks\n");
             status = EATING;
+            eatingCounter++;
+            eatingCounterStats->addData(eatingCounter);
             startEating = getCurrentSimTimeNano();
         } 
     } 
@@ -206,6 +232,10 @@ void diningPhilosopher::outputTickInfo() {
     output.output(CALL_INFO, "Waiting clock\n");
     output.output(CALL_INFO, "Left chopstick status: %s\n", returnStatus(holdingLeftChopstick).c_str());
     output.output(CALL_INFO, "Right chopstick status: %s\n", returnStatus(holdingRightChopstick).c_str());
+    output.output(CALL_INFO, "Eating counter: %d\n", eatingCounter);
+    output.output(CALL_INFO, "Thinking counter: %d\n", thinkingCounter);
+    output.output(CALL_INFO, "Hungry counter: %d\n", hungryCounter);
+    
     switch (status) {
     case THINKING: 
         output.output(CALL_INFO, "Status: THINKING\n");

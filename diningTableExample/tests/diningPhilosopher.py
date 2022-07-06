@@ -1,6 +1,6 @@
 import sst
 
-philosopherOne = sst.Component("Philosopher 1", "livelock.diningPhilosopher")
+philosopherOne = sst.Component("Philosopher 1", "livelock2.diningPhilosopher")
 philosopherOne.addParams(
     {
         "thinkingDuration": "15s",  # how long one thinks after eating
@@ -11,24 +11,33 @@ philosopherOne.addParams(
     }
 )
 
-philosopherTwo = sst.Component("Philosopher 2", "livelock.diningPhilosopher")
+philosopherTwo = sst.Component("Philosopher 2", "livelock2.diningPhilosopher")
 philosopherTwo.addParams({"thinkingDuration": "15s", "waitingClock": "13s", "randomseed": "123", "eatingduration": "1", "id": "2"})
 
-philosopherThree = sst.Component("Philosopher 3", "livelock.diningPhilosopher")
+philosopherThree = sst.Component("Philosopher 3", "livelock2.diningPhilosopher")
 philosopherThree.addParams({"thinkingDuration": "15s", "waitingClock": "13s", "randomseed": "348734", "eatingduration": "1", "id": "3"})
 
-philosopherFour = sst.Component("Philosopher 4", "livelock.diningPhilosopher")
+philosopherFour = sst.Component("Philosopher 4", "livelock2.diningPhilosopher")
 philosopherFour.addParams({"thinkingDuration": "15s", "waitingClock": "13s", "randomseed": "123", "eatingduration": "1", "id": "4"})
 
-philosopherFive = sst.Component("Philosopher 5", "livelock.diningPhilosopher")
+philosopherFive = sst.Component("Philosopher 5", "livelock2.diningPhilosopher")
 philosopherFive.addParams({"thinkingDuration": "15s", "waitingClock": "13s", "randomseed": "348734", "eatingduration": "1", "id": "5"})
 
-diningTable = sst.Component("Dining Table", "livelock.diningTable")
+diningTable = sst.Component("Dining Table", "livelock2.diningTable")
 diningTable.addParams(
     {
         "randomseed": "151515"  # random seed
     }
 )
+
+### Enable statistics
+sst.setStatisticLoadLevel(2)
+
+# Output statistics to CSV. 
+sst.setStatisticOutput("sst.statOutputCSV", { "filepath" : "statsoutput.csv", "separator" : "," } ) 
+
+## Enable statistics on the components
+sst.enableAllStatisticsForComponentType("livelock2.diningPhilosopher")
 
 
 # Connect the nodes by their ports.

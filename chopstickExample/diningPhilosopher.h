@@ -40,6 +40,13 @@ public:
 		{ "id", "id for dining table", "1" },
 	)
 
+	// Statistic name, description, unit, enable level
+	SST_ELI_DOCUMENT_STATISTICS(
+        { "eatingCounterStats", "Number of times a philosopher ate", "counter", 1 },  
+        { "thinkingCounterStats", "Number of times a philosopher thought", "counter", 1 },
+        { "hungryCounterStats", "Number of times a philosopher was hungry", "counter", 1 }
+    )
+
 	// Port name, description, event type
 	SST_ELI_DOCUMENT_PORTS(
 		{ "leftChopstick", "Connecting port to the dining table", {"sst.Interfaces.StringEvent", "leftChopstick"}},
@@ -59,10 +66,19 @@ private:
 	SST::Link *leftChopstick;
 	SST::Link *rightChopstick;
 
+	int eatingCounter;
+	int thinkingCounter;
+	int hungryCounter;
+
     philosopherStatus status;
 	chopstickStatus chopStatus;
     bool holdingLeftChopstick;
     bool holdingRightChopstick;
+
+	// Statistics
+	Statistic<int>* eatingCounterStats;
+	Statistic<int>* thinkingCounterStats;
+	Statistic<int>* hungryCounterStats;
 };
 
 #endif

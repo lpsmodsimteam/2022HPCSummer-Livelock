@@ -23,7 +23,7 @@ public:
 	// Register the component
 	SST_ELI_REGISTER_COMPONENT(
 		diningPhilosopher, // class
-		"livelock", // element library
+		"livelock2", // element library
 		"diningPhilosopher", // component
 		SST_ELI_ELEMENT_VERSION( 1, 0, 0 ),
 		"philosopher to model the dining philosophers problem",
@@ -38,6 +38,13 @@ public:
 		{ "eatingduration", "length of time to eat", "2000" },
 		{ "id", "id for dining table", "1" },
 	)
+
+	// Statistic name, description, unit, enable level
+	SST_ELI_DOCUMENT_STATISTICS(
+        { "eatingCounterStats", "Number of times a philosopher ate", "counter", 1 },  
+        { "thinkingCounterStats", "Number of times a philosopher thought", "counter", 1 },
+        { "hungryCounterStats", "Number of times a philosopher was hungry", "counter", 1 }
+    )
 
 	// Port name, description, event type
 	SST_ELI_DOCUMENT_PORTS(
@@ -54,12 +61,22 @@ private:
     int64_t eatingDuration;
   	int64_t startEating;
 	int8_t philid;
+
+	int eatingCounter;
+	int thinkingCounter;
+	int hungryCounter;
+
 	SST::Link *diningTable;
 
     philosopherStatus status;
 	chopstickStatus chopStatus;
     bool holdingLeftChopstick;
     bool holdingRightChopstick;
+
+	// Statistics
+	Statistic<int>* eatingCounterStats;
+	Statistic<int>* thinkingCounterStats;
+	Statistic<int>* hungryCounterStats;
 };
 
 #endif

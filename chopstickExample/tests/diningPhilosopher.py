@@ -38,6 +38,15 @@ L4R5.addParams({"name": "L4R5"})
 L5R1 = sst.Component("L5R1", "test.chopsticks")
 L5R1.addParams({"name": "L5R1"})
 
+### Enable statistics
+sst.setStatisticLoadLevel(2)
+
+# Output statistics to CSV. 
+sst.setStatisticOutput("sst.statOutputCSV", { "filepath" : "statsoutput.csv", "separator" : "," } ) 
+
+## Enable statistics on the components
+sst.enableAllStatisticsForComponentType("test.dine")
+
 
 # Connect philosopher one's chopsticks
 sst.Link("philosopher_one_left").connect(
