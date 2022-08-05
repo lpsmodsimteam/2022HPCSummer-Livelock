@@ -3,3 +3,8 @@
 *.so
 *.txt
 *.csv
+*.ods
+*.ods#
+*.csv#
+*.dot
+*.png
