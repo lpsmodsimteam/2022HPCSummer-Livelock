@@ -4,23 +4,25 @@ philosopherOne = sst.Component("Philosopher 1", "deadlock.diningPhilosopher")
 philosopherOne.addParams(
     {
         "thinkingDuration": "15s",  # how long one thinks after eating
-        "randomseed": "151515",  # random seed
-        "eatingduration": "1", # how long one holds chopsticks while eating
-        "id": "1"
+        "randomseed": "151515",     # random seed
+        "eatingduration": "1",      # how long one holds chopsticks while eating
+        "id": "1",                  # id for table to identify philosopher
+        "livelockCheck": "1000",    # length of cycles to wait before checking for livelock
+        "windowSize": "100"         # size of window for livelock detection
     }
 )
 
 philosopherTwo = sst.Component("Philosopher 2", "deadlock.diningPhilosopher")
-philosopherTwo.addParams({"thinkingDuration": "15s", "randomseed": "123", "eatingduration": "1", "id": "2"})
+philosopherTwo.addParams({"thinkingDuration": "15s", "randomseed": "123", "eatingduration": "1", "id": "2", "livelockCheck": "1000", "windowSize": "100"})
 
 philosopherThree = sst.Component("Philosopher 3", "deadlock.diningPhilosopher")
-philosopherThree.addParams({"thinkingDuration": "15s", "randomseed": "348734", "eatingduration": "1", "id": "3"})
+philosopherThree.addParams({"thinkingDuration": "15s", "randomseed": "348734", "eatingduration": "1", "id": "3", "livelockCheck": "1000", "windowSize": "100"})
 
 philosopherFour = sst.Component("Philosopher 4", "deadlock.diningPhilosopher")
-philosopherFour.addParams({"thinkingDuration": "15s", "randomseed": "123", "eatingduration": "1", "id": "4"})
+philosopherFour.addParams({"thinkingDuration": "15s", "randomseed": "123", "eatingduration": "1", "id": "4", "livelockCheck": "1000", "windowSize": "100"})
 
 philosopherFive = sst.Component("Philosopher 5", "deadlock.diningPhilosopher")
-philosopherFive.addParams({"thinkingDuration": "15s", "randomseed": "348734", "eatingduration": "1", "id": "5"})
+philosopherFive.addParams({"thinkingDuration": "15s", "randomseed": "348734", "eatingduration": "1", "id": "5", "livelockCheck": "1000", "windowSize": "100"})
 
 diningTable = sst.Component("Dining Table", "deadlock.diningTable")
 diningTable.addParams(

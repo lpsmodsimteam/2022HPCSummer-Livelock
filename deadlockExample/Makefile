@@ -51,7 +51,7 @@ install: $(CONTAINER) ~/.sst/sstsimulator.conf lib$(PACKAGE).so
 # Run the tests for the model
 test: $(CONTAINER) install
 	# currently infinitely loops, setting a stop to simulation
-	$(SINGULARITY) sst --stopAtCycle=1000s tests/diningPhilosopher.py 
+	$(SINGULARITY) sst tests/diningPhilosopher.py 
 
 # Unregister the model with SST
 uninstall: $(CONTAINER) ~/.sst/sstsimulator.conf
