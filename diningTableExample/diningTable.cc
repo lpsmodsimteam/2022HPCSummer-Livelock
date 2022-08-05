@@ -4,18 +4,12 @@
 #include <sst/core/simulation.h>
 #include "diningTable.h"
 
-using SST::Interfaces::StringEvent;
-
 diningTable::diningTable( SST::ComponentId_t id, SST::Params& params ) : SST::Component(id) {
+
+    // initalizes the name of each philosopher for our output
     output.init("diningTable-" + getName() + "-> ", 1, 0, SST::Output::STDOUT);
 
-	// Get parameters
-	RandomSeed = params.find<int64_t>("randomseed", 151515);
-
-	// Initialize variables
-	rng = new SST::RNG::MarsagliaRNG(15, RandomSeed);
-
-    // set the table to be holding all of the chopsticks
+    // initalize the table to be holding all of the chopsticks
     L1R2 = { TABLE, true, "L1R2" };
     L2R3 = { TABLE, true, "L2R3" };
     L3R4 = { TABLE, true, "L3R4" };
@@ -52,55 +46,48 @@ diningTable::~diningTable() {
 // table is recieving a request from a philosopher
 // then sending an update about chopstick status
 void diningTable::handleEvent(SST::Event *ev, std::string from) {
+    // we know that we only send PhilosopherRequestEvents to the dining table, 
+    // so we cast the parameter as such so we can read it properly
     PhilosopherRequestEvent *philev = dynamic_cast<PhilosopherRequestEvent*>(ev);
 	if ( philev != NULL ) {
+        // extract information from request event
         int philid = philev->philreq.id;
         chopstickAvailability chopNeeded = philev->philreq.side;
         chopstickStatus status = philev->philreq.status;
-        output.output(CALL_INFO, "recieved a chopstick request from philosopher %d\n", philid);
+        output.verbose(CALL_INFO, 2, 0, "recieved a chopstick request from philosopher %d\n", philid);
         
         // check whether request is from left or right
         if (status == REQUESTING) {
-            if ((philid == 1 && chopNeeded == LEFT) || (philid == 2 && chopNeeded == RIGHT)) {
-                // L1R2 Chopstick
+            if ((philid == 1 && chopNeeded == LEFT) || (philid == 2 && chopNeeded == RIGHT)) {          // L1R2 Chopstick
                 L1R2 = sendOverChopstick(L1R2, philid, chopNeeded);
-            } else if ((philid == 2 && chopNeeded == LEFT) || (philid == 3 && chopNeeded == RIGHT)) {
-                // L2R3 Chopstick
+            } else if ((philid == 2 && chopNeeded == LEFT) || (philid == 3 && chopNeeded == RIGHT)) {   // L2R3 Chopstick
                 L2R3 = sendOverChopstick(L2R3, philid, chopNeeded);
-            } else if ((philid == 3 && chopNeeded == LEFT) || (philid == 4 && chopNeeded == RIGHT)) {
-                // L3R4 Chopstick
+            } else if ((philid == 3 && chopNeeded == LEFT) || (philid == 4 && chopNeeded == RIGHT)) {   // L3R4 Chopstick
                 L3R4 = sendOverChopstick(L3R4, philid, chopNeeded);
-            } else if ((philid == 4 && chopNeeded == LEFT) || (philid == 5 && chopNeeded == RIGHT)) {
-                // L4R5 Chopstick
+            } else if ((philid == 4 && chopNeeded == LEFT) || (philid == 5 && chopNeeded == RIGHT)) {   // L4R5 Chopstick
                 L4R5 = sendOverChopstick(L4R5, philid, chopNeeded);
-            } else if ((philid == 5 && chopNeeded == LEFT) || (philid == 1 && chopNeeded == RIGHT)) {
-                // L5R1 Chopstick
+            } else if ((philid == 5 && chopNeeded == LEFT) || (philid == 1 && chopNeeded == RIGHT)) {   // L5R1 Chopstick
                 L5R1 = sendOverChopstick(L5R1, philid, chopNeeded);
             } else {
                 // not a valid request
-                output.output(CALL_INFO, " recieved an invalid request\n");
+                output.fatal(CALL_INFO, -1, " recieved an invalid request\n");
             }
 
         } else if (status == SENDING ) {
             // dining table recieved a used chopstick from a philosopher
-            if ((philid == 1 && chopNeeded == LEFT) || (philid == 2 && chopNeeded == RIGHT)) {
-                // L1R2 Chopstick is not being used anymore
+            if ((philid == 1 && chopNeeded == LEFT) || (philid == 2 && chopNeeded == RIGHT)) {          // L1R2 Chopstick
                 L1R2 = updateChopstick(L1R2, philid);
-            } else if ((philid == 2 && chopNeeded == LEFT) || (philid == 3 && chopNeeded == RIGHT)) {
-                // L2R3 Chopstick is not being used anymore
+            } else if ((philid == 2 && chopNeeded == LEFT) || (philid == 3 && chopNeeded == RIGHT)) {   // L2R3 Chopstick
                 L2R3 = updateChopstick(L2R3, philid);
-            } else if ((philid == 3 && chopNeeded == LEFT) || (philid == 4 && chopNeeded == RIGHT)) {
-                // L3R4 Chopstick is not being used anymore
+            } else if ((philid == 3 && chopNeeded == LEFT) || (philid == 4 && chopNeeded == RIGHT)) {   // L3R4 Chopstick
                 L3R4 = updateChopstick(L3R4, philid);
-            } else if ((philid == 4 && chopNeeded == LEFT) || (philid == 5 && chopNeeded == RIGHT)) {
-                // L4R5 Chopstick is not being used anymore
+            } else if ((philid == 4 && chopNeeded == LEFT) || (philid == 5 && chopNeeded == RIGHT)) {   // L4R5 Chopstick
                 L4R5 = updateChopstick(L4R5, philid);
-            } else if ((philid == 5 && chopNeeded == LEFT) || (philid == 1 && chopNeeded == RIGHT)) {
-                // L5R1 Chopstick is not being used anymore
+            } else if ((philid == 5 && chopNeeded == LEFT) || (philid == 1 && chopNeeded == RIGHT)) {   // L5R1 Chopstick
                 L5R1 = updateChopstick(L5R1, philid);
             } else {
                 // not a valid request
-                output.output(CALL_INFO, " recieved an invalid request\n");
+                output.fatal(CALL_INFO, -1, " recieved an invalid request\n");
             }
         }
         
@@ -141,21 +128,23 @@ SST::Link * diningTable::returnPhilosopherLink(int philid) {
         return philosopherFive;
         break;
     default:
-        return 0;
+        return 0; // unexpected id, return null
         break;
     }
 }
 
 Chopstick diningTable::sendOverChopstick(Chopstick chopstick, int philid, chopstickAvailability side) {
+    // only send chopstick if the table has ownership of it at the time
     if (chopstick.available && chopstick.status == TABLE) {
         chopstick.available = false;
-        chopstick.status = convertIDToStatus(philid);
+        chopstick.status = convertIDToStatus(philid);   // update owneship
+        // send a message back to the philosopher over the correct port
         if (side == LEFT) {
-            output.output(CALL_INFO, "sending a left chopstick to philosopher %d\n", philid);
+            output.verbose(CALL_INFO, 2, 0, "sending a left chopstick to philosopher %d\n", philid);
             struct ChopstickRequest chopreq = { true, LEFT };
             returnPhilosopherLink(philid)->send(new ChopstickRequestEvent(chopreq));
         } else {
-            output.output(CALL_INFO, "sending a right chopstick to philosopher %d\n", philid);
+            output.verbose(CALL_INFO, 2, 0, "sending a right chopstick to philosopher %d\n", philid);
             struct ChopstickRequest chopreq = { true, RIGHT };
             returnPhilosopherLink(philid)->send(new ChopstickRequestEvent(chopreq));
         }
@@ -164,7 +153,7 @@ Chopstick diningTable::sendOverChopstick(Chopstick chopstick, int philid, chopst
 }
 
 Chopstick diningTable::updateChopstick(Chopstick chopstick, int philid) {
-    output.output(CALL_INFO, "%s is returned by philosopher %d\n", chopstick.name.c_str(), philid);
+    output.verbose(CALL_INFO, 4, 0, "%s is returned by philosopher %d\n", chopstick.name.c_str(), philid);
     chopstick.available = true;
     chopstick.status = TABLE;
     return chopstick;

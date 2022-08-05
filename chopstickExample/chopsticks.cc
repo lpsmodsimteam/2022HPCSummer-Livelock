@@ -7,18 +7,20 @@
 using SST::Interfaces::StringEvent;
 
 chopsticks::chopsticks( SST::ComponentId_t id, SST::Params& params ) : SST::Component(id) {
+    
+    // initalizes the name of each chopstick for our output
     output.init("chopsticks-" + getName() + "-> ", 1, 0, SST::Output::STDOUT);
 
-    // set the table to be holding all of the chopsticks
+    // set the table to be holding all of the chopsticks, and initalize them
     chopstickInfo = { TABLE, true, "L1R2" };
     chopstickInfo.name = params.find<std::string>("name", "L1R2");
 
 	// Configure our ports
-	leftPhilosopher = configureLink("leftPhilosopher", "1ns", new SST::Event::Handler<chopsticks, std::string>(this, &chopsticks::handleEvent, "one"));
+	leftPhilosopher = configureLink("leftPhilosopher", "1ns", new SST::Event::Handler<chopsticks>(this, &chopsticks::handleEvent));
 	if ( !leftPhilosopher ) {
 		output.fatal(CALL_INFO, -1, "Failed to configure port 'leftPhilosopher'\n");
 	}
-    rightPhilosopher = configureLink("rightPhilosopher", "1ns", new SST::Event::Handler<chopsticks, std::string>(this, &chopsticks::handleEvent, "two"));
+    rightPhilosopher = configureLink("rightPhilosopher", "1ns", new SST::Event::Handler<chopsticks>(this, &chopsticks::handleEvent));
 	if ( !rightPhilosopher ) {
 		output.fatal(CALL_INFO, -1, "Failed to configure port 'rightPhilosopher'\n");
 	}
@@ -28,15 +30,18 @@ chopsticks::~chopsticks() {
 
 }
 
-// table is recieving a request from a philosopher
+// chopstick is recieving a request from a philosopher
 // then sending an update about chopstick status
-void chopsticks::handleEvent(SST::Event *ev, std::string from) {
+void chopsticks::handleEvent(SST::Event *ev) {
+    // we know that we only send PhilosopherRequestEvents to the chopsticks, 
+    // so we cast the parameter as such so we can read it properly
     PhilosopherRequestEvent *philev = dynamic_cast<PhilosopherRequestEvent*>(ev);
 	if ( philev != NULL ) {
+        // extract information from request event
         int philid = philev->philreq.id;
         chopstickAvailability chopNeeded = philev->philreq.side;
         chopstickStatus status = philev->philreq.status;
-        output.output(CALL_INFO, "recieved a %s chopstick request from philosopher %d\n", returnSide(chopNeeded).c_str(), philid);
+        output.verbose(CALL_INFO, 2, 0, "recieved a %s chopstick request from philosopher %d\n", returnSide(chopNeeded).c_str(), philid);
         
         // check whether request is from left or right
         if (status == REQUESTING) {
@@ -46,7 +51,7 @@ void chopsticks::handleEvent(SST::Event *ev, std::string from) {
                 chopstickInfo = sendOverChopstick(chopstickInfo, philid, chopNeeded);
             } else {
                 // not a valid request
-                output.output(CALL_INFO, " recieved an invalid request\n");
+                output.fatal(CALL_INFO, -1, " recieved an invalid request\n");
             }
         } else if (status == SENDING ) {
             // philosopher is placing down their chopstick
@@ -56,7 +61,7 @@ void chopsticks::handleEvent(SST::Event *ev, std::string from) {
                 chopstickInfo = updateChopstick(chopstickInfo, philid);
             } else {
                 // not a valid request
-                output.output(CALL_INFO, " recieved an invalid request\n");
+                output.fatal(CALL_INFO, -1, " recieved an invalid request\n");
             }
         }
     }
@@ -79,14 +84,15 @@ holdingStatus chopsticks::convertIDToStatus (int philid) {
 }
 
 Chopstick chopsticks::sendOverChopstick(Chopstick chopstick, int philid, chopstickAvailability side) {
+    // only send chopstick if the table has ownership of it at the time
     if (chopstick.available && chopstick.status == TABLE) {
         chopstick.available = false;
         if (side == LEFT) {
-            output.output(CALL_INFO, "sending a left chopstick to philosopher %d\n", philid);
+            output.verbose(CALL_INFO, 2, 0, "sending a left chopstick to philosopher %d\n", philid);
             struct ChopstickRequest chopreq = { true, LEFT };
             leftPhilosopher->send(new ChopstickRequestEvent(chopreq));
         } else {
-            output.output(CALL_INFO, "sending a right chopstick to philosopher %d\n", philid);
+            output.verbose(CALL_INFO, 2, 0, "sending a right chopstick to philosopher %d\n", philid);
             struct ChopstickRequest chopreq = { true, RIGHT };
             rightPhilosopher->send(new ChopstickRequestEvent(chopreq));
         }
@@ -95,7 +101,7 @@ Chopstick chopsticks::sendOverChopstick(Chopstick chopstick, int philid, chopsti
 }
 
 Chopstick chopsticks::updateChopstick(Chopstick chopstick, int philid) {
-    output.output(CALL_INFO, "%s is returned by philosopher %d\n", chopstick.name.c_str(), philid);
+    output.verbose(CALL_INFO, 4, 0, "%s is returned by philosopher %d\n", chopstick.name.c_str(), philid);
     chopstick.available = true;
     chopstick.status = TABLE;
     return chopstick;
